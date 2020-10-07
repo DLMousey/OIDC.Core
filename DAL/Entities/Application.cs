@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using OAuthServer.DAL.ViewModels.Entities;
 
 namespace OAuthServer.DAL.Entities
 {
@@ -30,5 +32,18 @@ namespace OAuthServer.DAL.Entities
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdatedAt { get; set; }
+
+        public ApplicationViewModel ToViewModel()
+        {
+            return new ApplicationViewModel
+            {
+                Id = Id,
+                Name = Name,
+                Description = Description,
+                FirstParty = FirstParty,
+                HomepageUrl = HomepageUrl,
+                RedirectUrl = RedirectUrl
+            };
+        }
     }
 }

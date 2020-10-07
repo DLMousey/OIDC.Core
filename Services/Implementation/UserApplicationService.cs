@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL;
@@ -17,6 +19,15 @@ namespace OAuthServer.Services.Implementation
         {
             _context = context;
             _applicationService = applicationService;
+        }
+
+        public async Task<IList<UserApplication>> FindByUserAsync(User user)
+        {
+            return await _context.UserApplications
+                .Include(ua => ua.Application)
+                .Include(ua => ua.User)
+                .Where(ua => ua.User.Equals(user))
+                .ToListAsync();
         }
 
         public async Task<UserApplication> FindOrCreateByUserAndClientIdAsync(User user, Guid clientId)

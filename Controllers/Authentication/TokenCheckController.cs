@@ -18,6 +18,6 @@ namespace OAuthServer.Controllers.Authentication
                 message = "Access token verified!",
                 data = HttpContext.Items["User"]
             });
-        } 
+        }
     }
 }
