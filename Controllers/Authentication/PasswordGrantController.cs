@@ -66,6 +66,15 @@ namespace OAuthServer.Controllers.Authentication
                     message = ex.Message
                 }) { StatusCode = StatusCodes.Status400BadRequest };
             }
+
+            if (!userApplication.Application.FirstParty)
+            {
+                return new JsonResult(new
+                {
+                    status = 403,
+                    message = "Third party applications are not permitted to use password grants"
+                }) {StatusCode = StatusCodes.Status403Forbidden};
+            }
             
             AccessToken accessToken = await _accessTokenService.CreateAsync(user, userApplication.Application);
             
