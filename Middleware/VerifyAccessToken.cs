@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -20,11 +21,19 @@ namespace OAuthServer.Middleware
 
         public async Task Invoke(HttpContext context, IAccessTokenService accessTokenService)
         {
-            string accessCode = context.Request.Cookies["_oidc.core-token"];
+            string accessCode;
+            bool hasCookie = context.Request.Cookies.TryGetValue("_oidc.core-token", out accessCode);
+
+            if (!hasCookie)
+            {
+                accessCode = context.Request.Headers
+                    .FirstOrDefault(x => x.Key.Equals("Authorization"))
+                    .Value;
+            }
 
             if (accessCode != null)
             {
-                await AttachUserToContext(context, accessCode, accessTokenService);
+                await AttachUserToContext(context, accessCode.Replace("Bearer ", ""), accessTokenService);
             }
 
             await _next(context);

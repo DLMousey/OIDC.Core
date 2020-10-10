@@ -6,6 +6,7 @@ namespace OAuthServer.Services.Interface
 {
     public interface IApplicationService
     {
+        Task<Application> FindAsync(Guid id);
         Task<Application> FindByClientIdAsync(Guid clientId);
     }
 }

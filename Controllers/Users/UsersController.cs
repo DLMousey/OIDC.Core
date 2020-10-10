@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using OAuthServer.DAL.Entities;
 using OAuthServer.Services.Interface;
+using OAuthServer.Utility.Attributes;
 
 namespace OAuthServer.Controllers.Users
 {
@@ -17,10 +18,11 @@ namespace OAuthServer.Controllers.Users
             _userService = userService;
         }
         
+        [Authorise]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok();
+            return Ok("User get endpoint success!");
         }
     }
 }

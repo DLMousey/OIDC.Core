@@ -87,7 +87,7 @@ namespace OAuthServer.Controllers.Authentication
             {
                 status = 200,
                 message = "Authentication successful",
-                data = accessToken.Code
+                data = accessToken.Code // @todo - remove this, do not return tokens from this endpoint
             });
         }
     }

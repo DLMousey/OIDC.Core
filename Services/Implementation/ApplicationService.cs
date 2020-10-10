@@ -16,6 +16,11 @@ namespace OAuthServer.Services.Implementation
             _context = context;
         }
 
+        public async Task<Application> FindAsync(Guid id)
+        {
+            return await _context.Applications.FindAsync(id);
+        }
+
         public async Task<Application> FindByClientIdAsync(Guid clientId)
         {
             return await _context.Applications.FirstOrDefaultAsync(a => a.ClientId.Equals(clientId));

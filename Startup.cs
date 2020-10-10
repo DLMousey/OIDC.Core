@@ -35,9 +35,11 @@ namespace OAuthServer
             // Scoped services
             services.AddScoped<IAccessTokenService, AccessTokenService>();
             services.AddScoped<IApplicationService, ApplicationService>();
+            services.AddScoped<IAuthorisationCodeService, AuthorisationCodeService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserApplicationService, UserApplicationService>();
-            services.AddScoped<IRoleService, RoleService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
