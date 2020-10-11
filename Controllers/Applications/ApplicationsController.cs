@@ -96,8 +96,8 @@ namespace OAuthServer.Controllers.Applications
                     data = ModelState
                 }) { StatusCode = StatusCodes.Status400BadRequest };
             }
-            
-            
+
+            return NoContent();
         }
     }
 } 
