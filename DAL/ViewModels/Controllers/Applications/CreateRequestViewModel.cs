@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OAuthServer.DAL.ViewModels.Controllers.Applications
 {
-    public class ApplicationCreateRequestViewModel
+    public class CreateRequestViewModel
     {
         [Required]
         public string Name { get; set; }

@@ -13,10 +13,12 @@ namespace OAuthServer.Services.Implementation
     public class AccessTokenService : IAccessTokenService
     {
         private readonly AppDbContext _context;
+        private readonly IRandomValueService _randomValueService;
 
-        public AccessTokenService(AppDbContext context)
+        public AccessTokenService(AppDbContext context, IRandomValueService randomValueService)
         {
             _context = context;
+            _randomValueService = randomValueService;
         }
 
         public async Task<AccessToken> FindByCodeAsync(string code)

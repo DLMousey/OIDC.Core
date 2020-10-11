@@ -36,6 +36,7 @@ namespace OAuthServer
             services.AddScoped<IAccessTokenService, AccessTokenService>();
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IAuthorisationCodeService, AuthorisationCodeService>();
+            services.AddScoped<IRandomValueService, RandomValueService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();

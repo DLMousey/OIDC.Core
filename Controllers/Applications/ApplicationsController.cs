@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using OAuthServer.DAL.Entities;
@@ -45,8 +46,9 @@ namespace OAuthServer.Controllers.Applications
             });
         }
 
+        [Authorise]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ApplicationCreateRequestViewModel vm)
+        public async Task<IActionResult> Create([FromBody] CreateRequestViewModel vm)
         {
             if (!ModelState.IsValid)
             {
@@ -55,11 +57,47 @@ namespace OAuthServer.Controllers.Applications
                     status = 400,
                     message = "Validation failed",
                     data = ModelState
-                });
+                }) { StatusCode = StatusCodes.Status400BadRequest };
             }
 
-            // @TODO - Implement endpoint
-            return Ok();
+            User user = (User) HttpContext.Items["User"];
+            Application application = await _applicationService.CreateAsync(vm, user);
+            return new JsonResult(new
+            {
+                status = 201,
+                message = "Application created successfully",
+                data = new
+                {
+                    application = new
+                    {
+                        id = application.Id,
+                        name = application.Name,
+                        description = application.Description,
+                        homepageUrl = application.HomepageUrl,
+                        redirectUrl = application.RedirectUrl,
+                        clientId = application.ClientId,
+                        clientSecret = application.ClientSecret,
+                        createdAt = application.CreatedAt
+                    }
+                }
+            });
+        }
+
+        [Authorise]
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] CreateRequestViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new
+                {
+                    status = 400,
+                    message = "Validation failed",
+                    data = ModelState
+                }) { StatusCode = StatusCodes.Status400BadRequest };
+            }
+            
+            
         }
     }
-}
+} 
