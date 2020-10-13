@@ -97,8 +97,21 @@ namespace OAuthServer.Controllers.Applications
                     data = ModelState
                 }) { StatusCode = StatusCodes.Status400BadRequest };
             }
+
+            User user = (User) HttpContext.Items["User"];
+            Application application = await _applicationService.FindAsync(id);
+
+            if (application == null || application.AuthorId != user.Id)
+            {
+                return new JsonResult(new
+                {
+                    status = 400,
+                    message = "Invalid application id provided",
+                }) { StatusCode = StatusCodes.Status400BadRequest };
+            }
             
-            Application application = await _applicationService.UpdateAsync(vm, id);
+
+            application = await _applicationService.UpdateAsync(vm, application);
             ApplicationViewModel appVm = application.ToViewModel();
 
             return new JsonResult(new
@@ -110,6 +123,26 @@ namespace OAuthServer.Controllers.Applications
                     application = appVm
                 }
             });
+        }
+
+        [Authorise]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
+        {
+            User user = (User) HttpContext.Items["User"];
+            Application application = await _applicationService.FindAsync(id);
+
+            if (application == null || application.AuthorId != user.Id)
+            {
+                return new JsonResult(new
+                {
+                    status = 400,
+                    message = "Invalid application id provided"
+                }) { StatusCode = StatusCodes.Status400BadRequest };
+            }
+
+            await _applicationService.DeleteAsync(application);
+            return NoContent();
         }
     }
 } 

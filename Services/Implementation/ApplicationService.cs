@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL;
@@ -51,15 +53,8 @@ namespace OAuthServer.Services.Implementation
             return application;
         }
 
-        public async Task<Application> UpdateAsync(CreateRequestViewModel vm, Guid id)
+        public async Task<Application> UpdateAsync(CreateRequestViewModel vm, Application application)
         {
-            Application application = await FindAsync(id);
-
-            if (application == null)
-            {
-                throw new UnknownApplicationException($"No application found by id: {id}");
-            }
-
             application.Name = vm.Name;
             application.Description = vm.Description;
             application.HomepageUrl = vm.HomepageUrl;
@@ -69,6 +64,33 @@ namespace OAuthServer.Services.Implementation
             await _context.SaveChangesAsync();
 
             return application;
+        }
+
+        public async Task<Application> DeleteAsync(Application application)
+        {
+            List<UserApplication> userApplications = await _context.UserApplications
+                .Include(ua => ua.Application)
+                .Where(ua => ua.Application.Equals(application))
+                .ToListAsync();
+
+            List<AccessToken> accessTokens = await _context.AccessTokens
+                .Include(at => at.Application)
+                .Where(at => at.Application.Equals(application))
+                .ToListAsync();
+
+            List<AuthorisationCode> authorisationCodes = await _context.AuthorisationCodes
+                .Include(ac => ac.Application)
+                .Where(ac => ac.Application.Equals(application))
+                .ToListAsync();
+            
+            _context.RemoveRange(userApplications);
+            _context.RemoveRange(accessTokens);
+            _context.RemoveRange(authorisationCodes);
+            _context.Applications.Remove(application);
+
+            await _context.SaveChangesAsync();
+
+            return null;
         }
     }
 }
