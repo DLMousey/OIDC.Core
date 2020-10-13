@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL;
 using OAuthServer.DAL.Entities;
 using OAuthServer.DAL.ViewModels.Controllers.Applications;
+using OAuthServer.Exceptions;
 using OAuthServer.Services.Interface;
 
 namespace OAuthServer.Services.Implementation
@@ -45,6 +46,26 @@ namespace OAuthServer.Services.Implementation
             };
 
             await _context.AddAsync(application);
+            await _context.SaveChangesAsync();
+
+            return application;
+        }
+
+        public async Task<Application> UpdateAsync(CreateRequestViewModel vm, Guid id)
+        {
+            Application application = await FindAsync(id);
+
+            if (application == null)
+            {
+                throw new UnknownApplicationException($"No application found by id: {id}");
+            }
+
+            application.Name = vm.Name;
+            application.Description = vm.Description;
+            application.HomepageUrl = vm.HomepageUrl;
+            application.RedirectUrl = vm.RedirectUrl;
+
+            _context.Applications.Update(application);
             await _context.SaveChangesAsync();
 
             return application;

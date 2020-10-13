@@ -10,5 +10,6 @@ namespace OAuthServer.Services.Interface
         Task<Application> FindAsync(Guid id);
         Task<Application> FindByClientIdAsync(Guid clientId);
         Task<Application> CreateAsync(CreateRequestViewModel vm, User user);
+        Task<Application> UpdateAsync(CreateRequestViewModel vm, Guid id);
     }
 }

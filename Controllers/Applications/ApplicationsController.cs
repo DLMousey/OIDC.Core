@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,8 +85,8 @@ namespace OAuthServer.Controllers.Applications
         }
 
         [Authorise]
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] CreateRequestViewModel vm)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromBody] CreateRequestViewModel vm, Guid id)
         {
             if (!ModelState.IsValid)
             {
@@ -96,8 +97,19 @@ namespace OAuthServer.Controllers.Applications
                     data = ModelState
                 }) { StatusCode = StatusCodes.Status400BadRequest };
             }
+            
+            Application application = await _applicationService.UpdateAsync(vm, id);
+            ApplicationViewModel appVm = application.ToViewModel();
 
-            return NoContent();
+            return new JsonResult(new
+            {
+                status = 200,
+                message = "Application updated successfully",
+                data = new
+                {
+                    application = appVm
+                }
+            });
         }
     }
 } 
