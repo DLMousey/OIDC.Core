@@ -68,6 +68,8 @@ namespace OAuthServer.Services.Implementation
         {
             return await _context.UserApplications
                 .Include(ua => ua.Application)
+                .Include(ua => ua.Scopes)
+                    .ThenInclude(s => s.Scope)
                 .Include(ua => ua.User)
                 .FirstOrDefaultAsync(ua =>
                 ua.UserId.Equals(user.Id) && ua.ApplicationId.Equals(application.Id));

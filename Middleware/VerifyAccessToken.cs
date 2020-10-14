@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +20,8 @@ namespace OAuthServer.Middleware
             _config = config;
         }
 
-        public async Task Invoke(HttpContext context, IAccessTokenService accessTokenService)
+        public async Task Invoke(HttpContext context, IAccessTokenService accessTokenService, 
+            IUserApplicationService userApplicationService)
         {
             string accessCode;
             bool hasCookie = context.Request.Cookies.TryGetValue("_oidc.core-token", out accessCode);
@@ -33,13 +35,19 @@ namespace OAuthServer.Middleware
 
             if (accessCode != null)
             {
-                await AttachUserToContext(context, accessCode.Replace("Bearer ", ""), accessTokenService);
+                await AttachUserToContext(
+                    context, 
+                    accessCode.Replace("Bearer ", ""), 
+                    accessTokenService,
+                    userApplicationService
+                );
             }
 
             await _next(context);
         }
 
-        private async Task AttachUserToContext(HttpContext context, string accessCode, IAccessTokenService accessTokenService)
+        private async Task AttachUserToContext(HttpContext context, string accessCode, 
+            IAccessTokenService accessTokenService, IUserApplicationService userApplicationService)
         {
             AccessToken accessToken = await accessTokenService.FindByCodeAsync(accessCode);
             if (accessToken.Revoked || DateTime.Now > accessToken.ExpiresAt)
@@ -49,6 +57,26 @@ namespace OAuthServer.Middleware
 
             context.Items["User"] = accessToken.User;
             context.Items["Application"] = accessToken.Application;
+
+            if (accessToken.Application != null)
+            {
+                List<Scope> scopes = new List<Scope>();
+                UserApplication userApplication =
+                    await userApplicationService.FindByUserAndApplicationAsync(accessToken.User,
+                        accessToken.Application);
+
+                if (userApplication == null)
+                {
+                    return;
+                }
+
+                foreach (UserApplicationScope scope in userApplication.Scopes)
+                {
+                    scopes.Add(scope.Scope);
+                }
+
+                context.Items["Scopes"] = scopes;
+            }
         }
     }
 }
