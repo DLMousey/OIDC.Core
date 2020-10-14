@@ -13,6 +13,7 @@ namespace OAuthServer.DAL
         public virtual DbSet<Scope> Scopes { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserApplication> UserApplications { get; set; }
+        public virtual DbSet<UserApplicationScope> UserApplicationScopes { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
@@ -76,13 +77,26 @@ namespace OAuthServer.DAL
 
             modelBuilder.Entity<UserApplication>(builder =>
             {
-                builder.HasKey(ua => new {ua.UserId, ua.ApplicationId});
-
                 builder.HasOne(ua => ua.User)
                     .WithMany(u => u.UserApplications)
                     .HasForeignKey(ua => ua.UserId);
 
+                builder.HasMany(ua => ua.Scopes)
+                    .WithOne(uas => uas.UserApplication)
+                    .HasForeignKey(uas => uas.UserApplicationId);
+
                 builder.HasOne(ua => ua.Application);
+            });
+
+            modelBuilder.Entity<UserApplicationScope>(builder =>
+            {
+                builder.HasKey(uas => new {uas.UserApplicationId, uas.ScopeId});
+
+                builder.HasOne(uas => uas.UserApplication)
+                    .WithMany(ua => ua.Scopes)
+                    .HasForeignKey(ua => ua.UserApplicationId);
+
+                builder.HasOne(uas => uas.Scope);
             });
 
             modelBuilder.Entity<User>(builder =>

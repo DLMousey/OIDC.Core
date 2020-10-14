@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using OAuthServer.DAL.Entities;
 
 namespace OAuthServer.DAL.ViewModels.Controllers.Authentication.OAuth.AuthorisationCode
 {

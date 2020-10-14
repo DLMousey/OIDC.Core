@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using OAuthServer.DAL.Entities;
+using OAuthServer.DAL.ViewModels.Controllers.Users;
 
 namespace OAuthServer.Services.Interface
 {
@@ -11,6 +12,8 @@ namespace OAuthServer.Services.Interface
         Task<User> FindByEmailAsync(string email);
 
         Task<User> CreateAsync(string email, string username, string password);
+
+        Task<User> UpdateAsync(User user, UserUpdateViewModel vm);
 
         bool VerifyPassword(string hash, string password);
     }

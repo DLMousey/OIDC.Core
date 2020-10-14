@@ -102,5 +102,34 @@ namespace OAuthServer.Services.Implementation
 
             return userApplication;
         }
+
+        public async Task<UserApplication> AuthoriseApplicationAsync(User user, Application application, IList<Scope> scopes)
+        {
+            UserApplication userApplication = new UserApplication
+            {
+                Application = application,
+                ApplicationId = application.Id,
+                User = user,
+                UserId = user.Id
+            };
+
+            await _context.UserApplications.AddAsync(userApplication);
+
+            foreach (Scope scope in scopes)
+            {
+                UserApplicationScope uas = new UserApplicationScope
+                {
+                    UserApplication = userApplication,
+                    UserApplicationId = userApplication.Id,
+                    Scope = scope,
+                    ScopeId = scope.Id
+                };
+
+                await _context.UserApplicationScopes.AddAsync(uas);
+            }
+
+            await _context.SaveChangesAsync();
+            return userApplication;
+        }
     }
 }

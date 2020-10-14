@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OAuthServer.DAL.ViewModels.Entities;
 
 namespace OAuthServer.DAL.Entities
 {
@@ -12,6 +13,14 @@ namespace OAuthServer.DAL.Entities
         public string Email { get; set; }
 
         public string Password { get; set; }
+
+        public string Bio { get; set; }
+
+        public string Forename { get; set; }
+
+        public string Surname { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
 
         public bool Banned { get; set; } = false;
 
@@ -30,5 +39,19 @@ namespace OAuthServer.DAL.Entities
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? BannedAt { get; set; }
+
+        public UserViewModel ToViewModel()
+        {
+            return new UserViewModel
+            {
+                Id = Id,
+                Username = Username,
+                Email = Email,
+                Bio = Bio,
+                Forename = Forename,
+                Surname = Surname,
+                DateOfBirth = DateOfBirth
+            };
+        }
     }
 }

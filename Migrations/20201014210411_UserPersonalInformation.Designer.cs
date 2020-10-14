@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OAuthServer.DAL;
@@ -9,9 +10,10 @@ using OAuthServer.DAL;
 namespace OAuthServer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201014210411_UserPersonalInformation")]
+    partial class UserPersonalInformation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,38 +240,38 @@ namespace OAuthServer.Migrations
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplication", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ApplicationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("AccessTokenId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.Property<Guid?>("AuthorisationCodeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RefreshTokenId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "ApplicationId");
+
+                    b.HasIndex("AccessTokenId");
 
                     b.HasIndex("ApplicationId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("AuthorisationCodeId");
+
+                    b.HasIndex("RefreshTokenId");
 
                     b.ToTable("UserApplications");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplicationScope", b =>
-                {
-                    b.Property<Guid>("UserApplicationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ScopeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserApplicationId", "ScopeId");
-
-                    b.HasIndex("ScopeId");
-
-                    b.ToTable("UserApplicationScopes");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
@@ -357,11 +359,23 @@ namespace OAuthServer.Migrations
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplication", b =>
                 {
+                    b.HasOne("OAuthServer.DAL.Entities.AccessToken", "AccessToken")
+                        .WithMany()
+                        .HasForeignKey("AccessTokenId");
+
                     b.HasOne("OAuthServer.DAL.Entities.Application", "Application")
                         .WithMany("UserApplications")
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("OAuthServer.DAL.Entities.AuthorisationCode", "AuthorisationCode")
+                        .WithMany()
+                        .HasForeignKey("AuthorisationCodeId");
+
+                    b.HasOne("OAuthServer.DAL.Entities.RefreshToken", "RefreshToken")
+                        .WithMany()
+                        .HasForeignKey("RefreshTokenId");
 
                     b.HasOne("OAuthServer.DAL.Entities.User", "User")
                         .WithMany("UserApplications")
@@ -369,28 +383,15 @@ namespace OAuthServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AccessToken");
+
                     b.Navigation("Application");
 
+                    b.Navigation("AuthorisationCode");
+
+                    b.Navigation("RefreshToken");
+
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplicationScope", b =>
-                {
-                    b.HasOne("OAuthServer.DAL.Entities.Scope", "Scope")
-                        .WithMany()
-                        .HasForeignKey("ScopeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OAuthServer.DAL.Entities.UserApplication", "UserApplication")
-                        .WithMany("Scopes")
-                        .HasForeignKey("UserApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Scope");
-
-                    b.Navigation("UserApplication");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
@@ -435,11 +436,6 @@ namespace OAuthServer.Migrations
                     b.Navigation("Roles");
 
                     b.Navigation("UserApplications");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplication", b =>
-                {
-                    b.Navigation("Scopes");
                 });
 #pragma warning restore 612, 618
         }

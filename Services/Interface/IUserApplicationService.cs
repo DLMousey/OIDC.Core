@@ -12,5 +12,6 @@ namespace OAuthServer.Services.Interface
         Task<UserApplication> FindByUserAndApplicationAsync(User user, Application application);
         Task<UserApplication> AuthoriseApplicationAsync(Guid userId, Guid applicationId);
         Task<UserApplication> AuthoriseApplicationAsync(User user, Application application);
+        Task<UserApplication> AuthoriseApplicationAsync(User user, Application application, IList<Scope> scopes);
     }
 }

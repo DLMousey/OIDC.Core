@@ -17,17 +17,20 @@ namespace OAuthServer.Controllers.Authentication
     public class AuthorisationCodeGrantController : ControllerBase
     {
         private readonly IApplicationService _applicationService;
+        private readonly IUserApplicationService _userApplicationService;
         private readonly IScopeService _scopeService;
         private readonly IAuthorisationCodeService _authorisationCodeService;
         private readonly IAccessTokenService _accessTokenService;
 
         public AuthorisationCodeGrantController(
             IApplicationService applicationService, 
+            IUserApplicationService userApplicationService,
             IScopeService scopeService,
             IAuthorisationCodeService authorisationCodeService,
             IAccessTokenService accessTokenService)
         {
             _applicationService = applicationService;
+            _userApplicationService = userApplicationService;
             _scopeService = scopeService;
             _authorisationCodeService = authorisationCodeService;
             _accessTokenService = accessTokenService;
@@ -50,7 +53,7 @@ namespace OAuthServer.Controllers.Authentication
             string[] scopeNames = vm.Scopes.Split(",");
             IList<Scope> scopes = await _scopeService.FindByNameAsync(scopeNames);
             Application application = await _applicationService.FindByClientIdAsync(vm.ClientId);
-
+            
             if (scopes.Count == 0 || application == null)
             {
                 string message = (scopes.Count == 0) ? "At least 1 scope must be provided" 
@@ -62,9 +65,21 @@ namespace OAuthServer.Controllers.Authentication
                     message
                 }) { StatusCode = StatusCodes.Status400BadRequest };
             }
-            
-            // @TODO - Generate a cryptographically signed OTP that will be returned to this endpoint to prevent token generation without consent
-            
+
+            /*
+             * "Authorise" the application at this point by creating a new user application record
+             * along with the scopes requested by the application - this allows us to verify
+             * that the same set of scopes that the user originally consented to are the same ones
+             * the application ultimately ends up getting access to.
+             *
+             * No credentials will be generated at this point, ultimately leaving the user with
+             * a linked application but no credentials that it can use - this can then be cleaned up
+             * by a scheduled task later on which specifically looks for user application records
+             * with no corresponding access tokens.
+             */
+            User user = (User) HttpContext.Items["User"];
+            await _userApplicationService.AuthoriseApplicationAsync(user, application, scopes);
+
             ApplicationViewModel applicationVm = application.ToViewModel();
             return new JsonResult(new
             {
@@ -104,7 +119,37 @@ namespace OAuthServer.Controllers.Authentication
             }
 
             User user = (User) HttpContext.Items["User"];
+            
+            /*
+             * At this point we've verified the application ID being sent back is legitimate and that user is logged
+             * in - indicating they have instructed us to generate an authorisation code for this application to
+             * access their account.
+             *
+             * At this point we must validate this claim - if there is no user application record found,
+             * the user has likely not been through the OAuth prompt and this request should be immediately
+             * dropped since this request is malicious.
+             */
+            UserApplication userApplication =
+                await _userApplicationService.FindByUserAndApplicationAsync(user, application);
+
+            if (userApplication == null)
+            {
+                return new JsonResult(new
+                {
+                    status = 400,
+                    message = "No user application link found - applications are not allowed to link to accounts " +
+                              "without explicit user consent!"
+                }) { StatusCode = StatusCodes.Status403Forbidden };
+            }
+            
             AuthorisationCode authCode = await _authorisationCodeService.CreateAsync(user, application);
+
+            /*
+             * At this point in the process the user has consented to this application getting access
+             * to their account and an authorisation token has been created, the user will be sent
+             * back to the client with this authorisation token
+             */
+            await _userApplicationService.AuthoriseApplicationAsync(user, application);
 
             return Ok(new
             {

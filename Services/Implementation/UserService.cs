@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL;
 using OAuthServer.DAL.Entities;
+using OAuthServer.DAL.ViewModels.Controllers.Users;
 using OAuthServer.Exceptions;
 using OAuthServer.Services.Interface;
 
@@ -63,6 +64,21 @@ namespace OAuthServer.Services.Implementation
             });
             
             await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return user;
+        }
+
+        public async Task<User> UpdateAsync(User user, UserUpdateViewModel vm)
+        {
+            user.Username = vm.Username ?? user.Username;
+            user.Email = vm.Email ?? user.Email;
+            user.Bio = vm.Bio ?? user.Bio;
+            user.Forename = vm.Forename ?? user.Forename;
+            user.Surname = vm.Surname ?? user.Surname;
+            user.DateOfBirth = vm.DateOfBirth ?? user.DateOfBirth;
+
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
             return user;

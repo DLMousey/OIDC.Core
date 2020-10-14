@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace OAuthServer.DAL.Entities
 {
@@ -14,18 +16,6 @@ namespace OAuthServer.DAL.Entities
 
         public Application Application { get; set; }
 
-        public Guid? AuthorisationCodeId { get; set; }
-
-        public AuthorisationCode AuthorisationCode { get; set; }
-
-        public Guid? AccessTokenId { get; set; }
-
-        public AccessToken AccessToken { get; set; }
-
-        public Guid? RefreshTokenId { get; set; }
-
-        public RefreshToken RefreshToken { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public ICollection<UserApplicationScope> Scopes { get; set; }
     }
 }

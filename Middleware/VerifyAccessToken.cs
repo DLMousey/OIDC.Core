@@ -48,6 +48,7 @@ namespace OAuthServer.Middleware
             }
 
             context.Items["User"] = accessToken.User;
+            context.Items["Application"] = accessToken.Application;
         }
     }
 }
