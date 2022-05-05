@@ -32,7 +32,10 @@ namespace OAuthServer.Services.Implementation
         public async Task<AccessToken> FindByUserApplication(UserApplication userApplication)
         {
             return await _context.AccessTokens.FirstOrDefaultAsync(at =>
-                at.UserId.Equals(userApplication.UserId) && at.ApplicationId.Equals(userApplication.ApplicationId));
+                at.UserId.Equals(userApplication.UserId) 
+                && at.ApplicationId.Equals(userApplication.ApplicationId)
+                && at.ExpiresAt > DateTime.UtcNow
+            );
         }
         
         public async Task<AccessToken> CreateAsync(User user, Application application)
@@ -48,7 +51,7 @@ namespace OAuthServer.Services.Implementation
             AccessToken accessToken = await FindByUserApplication(assignment);
             if (accessToken != null)
             {
-                accessToken.LastUsed = DateTime.Now;
+                accessToken.LastUsed = DateTime.UtcNow;
                 _context.Update(accessToken);
                 await _context.SaveChangesAsync();
                 
@@ -60,7 +63,8 @@ namespace OAuthServer.Services.Implementation
                 ApplicationId = application.Id,
                 Code = GenerateCode(),
                 UserId = user.Id,
-                ExpiresAt = DateTime.Now.AddDays(7),
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
             };
             
             await _context.AddAsync(accessToken);

@@ -8,6 +8,10 @@ namespace OAuthServer.DAL.Entities
 
         public string Name { get; set; }
 
+        public string Label { get; set; }
+
         public string Description { get; set; }
+
+        public bool Dangerous { get; set; }
     }
 }

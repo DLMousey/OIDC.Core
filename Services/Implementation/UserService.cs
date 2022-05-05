@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -53,7 +54,8 @@ namespace OAuthServer.Services.Implementation
                 Email = email,
                 Username = username,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
-                Roles = new List<UserRole>() 
+                Roles = new List<UserRole>(),
+                CreatedAt = DateTime.UtcNow
             };
             
             Role userRole = await _roleService.FindByNameAsync("User");

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -82,12 +83,17 @@ namespace OAuthServer.Controllers.Authentication
             options.Expires = accessToken.ExpiresAt;
             options.HttpOnly = true;
             Response.Cookies.Append("_oidc.core-token", accessToken.Code, options);
+
+            CookieOptions timestampOptions = new CookieOptions();
+            timestampOptions.Expires = accessToken.ExpiresAt;
+            timestampOptions.HttpOnly = false;
+            Response.Cookies.Append("_oidc.core-authenticated_at", accessToken.ExpiresAt.ToString("O"), timestampOptions);
             
             return Ok(new
             {
                 status = 200,
                 message = "Authentication successful",
-                data = accessToken.Code // @todo - remove this, do not return tokens from this endpoint
+                data = accessToken.Code
             });
         }
     }

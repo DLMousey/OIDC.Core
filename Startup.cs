@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,24 @@ namespace OAuthServer
             services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserApplicationService, UserApplicationService>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("frontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+                
+                options.AddPolicy("open", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,7 +74,12 @@ namespace OAuthServer
 
             app.UseRouting();
 
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            
             // app.UseAuthorization();
+
+            app.UseCors("frontend");
+            app.UseCors("open");
 
             app.UseMiddleware<VerifyAccessToken>();
 
