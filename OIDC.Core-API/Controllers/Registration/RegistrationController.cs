@@ -48,10 +48,10 @@ namespace OAuthServer.Controllers.Registration
 
             return new JsonResult(new
             {
-                status = 200,
+                status = 201,
                 message = "Registration successful",
                 data = user
-            });
+            }) { StatusCode = StatusCodes.Status201Created };
         }
     }
 }
