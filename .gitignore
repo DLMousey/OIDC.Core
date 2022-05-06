@@ -7,3 +7,5 @@ riderModule.iml
 appsettings.json
 appsettings.Development.json
 Migrations/AppDbContextModelSnapshot.cs
+OIDC.Core.sln.DotSettings.user
+
