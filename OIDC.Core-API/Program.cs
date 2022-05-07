@@ -18,6 +18,8 @@ namespace OAuthServer
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) => 
+                    config.AddJsonFile("oidc-core.json", optional: true, reloadOnChange: true))
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

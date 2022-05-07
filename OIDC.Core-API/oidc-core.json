@@ -1,0 +1,8 @@
+{
+  "email": {
+    "from": {
+      "name": "Even More Custom From Name",
+      "address": "noreply@example.com"
+    }
+  }
+}

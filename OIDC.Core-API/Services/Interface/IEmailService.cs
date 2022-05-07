@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OAuthServer.DAL.Entities;
+using OAuthServer.DAL.ViewModels.Emails;
 
 namespace OAuthServer.Services.Interface;
 
 public interface IEmailService
 {
-    Task SendToUserAsync(string slug, User user, Dictionary<string, string> data = null);
+    Task SendToUserAsync(EmailViewModel viewModel, User user);
 
-    // Task SendToEmailAsync(string slug, string email, Dictionary<string, string> data = null);
+    Task SendToEmailAsync(EmailViewModel viewModel);
 }

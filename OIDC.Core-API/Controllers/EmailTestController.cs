@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using OAuthServer.DAL.Entities;
+using OAuthServer.DAL.ViewModels.Emails;
 using OAuthServer.Services.Interface;
 using OAuthServer.Utility.Attributes;
 
@@ -27,8 +28,17 @@ public class EmailTestController : ControllerBase
         Dictionary<string, string> data = new();
         data.Add("username", user.Username);
         data.Add("login-time", DateTime.UtcNow.ToString("h:mm:ss tt zz"));
+
+        NewLoginEmailViewModel vm = new NewLoginEmailViewModel
+        {
+            ToName = user.FullName(),
+            ToAddress = user.Email,
+            Slug = "login.new",
+            Subject = "New login detected",
+            Data = data
+        };
         
-        await _emailService.SendToUserAsync("login.new", user, data);
+        await _emailService.SendToUserAsync(vm, user);
 
         return Ok();
     }

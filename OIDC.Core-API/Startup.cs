@@ -10,6 +10,7 @@ using OAuthServer.Services.Implementation;
 using OAuthServer.Services.Interface;
 using Newtonsoft.Json;
 using OAuthServer.Middleware;
+using YamlDotNet;
 
 namespace OAuthServer
 {
