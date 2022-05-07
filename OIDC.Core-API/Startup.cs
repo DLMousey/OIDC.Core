@@ -10,6 +10,7 @@ using OAuthServer.Services.Implementation;
 using OAuthServer.Services.Interface;
 using Newtonsoft.Json;
 using OAuthServer.Middleware;
+using YamlDotNet;
 
 namespace OAuthServer
 {
@@ -42,6 +43,9 @@ namespace OAuthServer
             services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserApplicationService, UserApplicationService>();
+            
+            // Singletons
+            services.AddSingleton<IEmailService, EmailService>();
 
             services.AddCors(options =>
             {
