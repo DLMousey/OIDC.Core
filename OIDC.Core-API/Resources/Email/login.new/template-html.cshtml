@@ -1,0 +1,17 @@
+@inherits RazorEngineCore.RazorEngineTemplateBase<Dictionary<string, string>>
+
+<table style="width: 600px; margin: 0 auto; text-align: center; font-family: sans-serif; padding: 12px; border: 1px solid black;">
+    <tbody>
+        <tr>
+            <td><b>New Login Detected</b></td>
+        </tr>
+        <tr>
+            <td>
+                <td>Someone (hopefully you) successfully logged into your OIDC.Core account today at @Model["login-time"]</td>
+            </td>
+        </tr>
+        <tr>
+            <td>If this wasn't you please reset your password immediately</td>
+        </tr>
+    </tbody>
+</table>

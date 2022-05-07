@@ -42,6 +42,9 @@ namespace OAuthServer
             services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserApplicationService, UserApplicationService>();
+            
+            // Singletons
+            services.AddSingleton<IEmailService, EmailService>();
 
             services.AddCors(options =>
             {

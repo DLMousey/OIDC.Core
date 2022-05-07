@@ -53,5 +53,10 @@ namespace OAuthServer.DAL.Entities
                 DateOfBirth = DateOfBirth
             };
         }
+
+        public string FullName()
+        {
+            return $"{Forename} {Surname}";
+        }
     }
 }
