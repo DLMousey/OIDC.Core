@@ -45,6 +45,8 @@ namespace OAuthServer.Utility.Attributes
                     status = 401,
                     message
                 }) { StatusCode = StatusCodes.Status401Unauthorized };
+
+                return;
             }
 
             /*
@@ -71,6 +73,8 @@ namespace OAuthServer.Utility.Attributes
                     status = 403,
                     message
                 }) { StatusCode = StatusCodes.Status403Forbidden };
+
+                return;
             }
 
             /*
