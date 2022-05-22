@@ -86,7 +86,8 @@ namespace OAuthServer
             app.UseCors("open");
 
             app.UseMiddleware<VerifyAccessToken>();
-
+            // app.UseMiddleware<Pyromaniac.Pyromaniac>();
+            
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

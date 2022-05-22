@@ -13,5 +13,7 @@ namespace OAuthServer.DAL.Entities
         public string Description { get; set; }
 
         public bool Dangerous { get; set; }
+
+        public string Icon { get; set; }
     }
 }

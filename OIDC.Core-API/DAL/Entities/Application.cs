@@ -42,7 +42,8 @@ namespace OAuthServer.DAL.Entities
                 Description = Description,
                 FirstParty = FirstParty,
                 HomepageUrl = HomepageUrl,
-                RedirectUrl = RedirectUrl
+                RedirectUrl = RedirectUrl,
+                ClientId = ClientId
             };
         }
     }

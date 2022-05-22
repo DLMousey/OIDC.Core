@@ -36,7 +36,14 @@ namespace OAuthServer.Controllers.Applications
                 .FindByUserAsync(user);
 
             IList<ApplicationViewModel> applications = authorisedApplications
-                .Select(ua => ua.Application.ToViewModel())
+                .Select(ua =>
+                {
+                    List<Scope> scopes = ua.Scopes.Select(ua => ua.Scope).ToList();
+                    ApplicationViewModel vm = ua.Application.ToViewModel();
+                    vm.Scopes = scopes;
+
+                    return vm;
+                })
                 .ToList();
 
             return Ok(new
@@ -44,6 +51,24 @@ namespace OAuthServer.Controllers.Applications
                 status = 200,
                 message = "Authorised applications retrieved successfully",
                 data = applications
+            });
+        }
+
+        [HttpGet("published")]
+        public async Task<IActionResult> GetPublishedApplications()
+        {
+            User user = (User) HttpContext.Items["User"];
+
+            IList<Application> applications = await _applicationService.FindByAuthorAsync(user);
+            IList<ApplicationViewModel> applicationVms = applications
+                .Select(a => a.ToViewModel())
+                .ToList();
+
+            return Ok(new
+            {
+                status = 200,
+                message = "Published applications retrieved successfully",
+                data = applicationVms
             });
         }
 

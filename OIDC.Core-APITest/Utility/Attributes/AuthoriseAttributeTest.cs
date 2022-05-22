@@ -54,7 +54,7 @@ public class AuthoriseAttributeTest
         Dictionary<object, object?> contextItems = new() { { "User", user } };
         ActionContext actionContext = BuildActionContext(contextItems);
         AuthorizationFilterContext context = new AuthorizationFilterContext(actionContext, new List<IFilterMetadata>());
-        
+
         _attribute.OnAuthorization(context);
         JsonResult result = context.Result as JsonResult ?? throw new InvalidOperationException();
 
