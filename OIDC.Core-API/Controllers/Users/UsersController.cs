@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OAuthServer.DAL.Entities;
 using OAuthServer.DAL.ViewModels.Controllers.Users;

@@ -32,6 +32,11 @@ namespace OAuthServer.Services.Implementation
             return await _context.Applications.FirstOrDefaultAsync(a => a.ClientId.Equals(clientId));
         }
 
+        public async Task<IList<Application>> FindByAuthorAsync(User user)
+        {
+            return await _context.Applications.Where(a => a.Author.Equals(user)).ToListAsync();
+        }
+
         public async Task<Application> CreateAsync(CreateRequestViewModel vm, User user)
         {
             Application application = new Application
