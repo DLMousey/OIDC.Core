@@ -76,7 +76,9 @@ internal class Program
         string password = randomValueService.CryptoSafeRandomString(12);
         User user = CreateUser(userService, randomValueService, username, password);
         Application application = CreateApplication(applicationService, context, appName, user);
-        
+
+        AssignRoles(context, user);
+
         Console.WriteLine("\nProvisioning complete");
         Console.WriteLine("---------------");
         
@@ -182,6 +184,28 @@ internal class Program
         Console.WriteLine($"Initial user created successfully, GUID: {user.Id}");
 
         return user;
+    }
+
+    private static async Task AssignRoles(AppDbContext context, User user)
+    {
+        Console.WriteLine("Assigning all available roles to initial user...");
+        
+        List<Role> roles = await context.Roles.ToListAsync();
+        roles.ForEach(r =>
+        {
+            user.Roles.Add(new UserRole
+            {
+                Role = r,
+                RoleId = r.Id,
+                User = user,
+                UserId = user.Id
+            });
+        });
+
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
+        
+        Console.WriteLine("Roles assigned");
     }
 }
 

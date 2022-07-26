@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -39,13 +40,58 @@ public class ScopesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateAsync(CreateScopeRequestViewModel request)
     {
-        return NoContent();
+        if (!ModelState.IsValid)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = "Validation failed, please double check your data and try again",
+                data = ModelState
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
+        try
+        {
+            Scope scope = await _scopeService.CreateAsync(request);
+            return new JsonResult(new
+            {
+                status = 201,
+                message = "Scope created successfully",
+                data = scope
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = ex.Message,
+                data = request
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
     }
 
     [Authorise("scopes.create")]
     [HttpPost("batch")]
     public async Task<IActionResult> CreateMultipleAsync(IEnumerable<CreateScopeRequestViewModel> request)
     {
-        return NoContent();
+        if (!ModelState.IsValid)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = "Validation failed, please double check your data and try again",
+                data = ModelState
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
+        List<Scope> scopes = await _scopeService.CreateAsync(request);
+        return new JsonResult(new
+        {
+            status = 201,
+            message = "Scopes created successfully",
+            data = scopes
+        }) { StatusCode = StatusCodes.Status201Created };
     }
 }
