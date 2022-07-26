@@ -71,6 +71,8 @@ namespace OAuthServer.Services.Implementation
                 .Include(ua => ua.Scopes)
                     .ThenInclude(s => s.Scope)
                 .Include(ua => ua.User)
+                    .ThenInclude(u => u.Roles)
+                        .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(ua =>
                 ua.UserId.Equals(user.Id) && ua.ApplicationId.Equals(application.Id));
         }

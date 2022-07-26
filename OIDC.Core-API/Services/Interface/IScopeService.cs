@@ -6,6 +6,8 @@ namespace OAuthServer.Services.Interface
 {
     public interface IScopeService
     {
+        Task<IList<Scope>> FindAllAsync();
+        
         Task<IList<Scope>> FindByNameAsync(string[] scopeNames);
     }
 }

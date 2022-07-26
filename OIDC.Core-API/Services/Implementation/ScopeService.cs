@@ -15,7 +15,12 @@ namespace OAuthServer.Services.Implementation
         {
             _context = context;
         }
-        
+
+        public async Task<IList<Scope>> FindAllAsync()
+        {
+            return await _context.Scopes.ToListAsync();
+        }
+
         public async Task<IList<Scope>> FindByNameAsync(string[] scopeNames)
         {
             IList<Scope> scopes = new List<Scope>();
