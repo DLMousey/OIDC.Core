@@ -118,14 +118,32 @@ internal class Program
             Name = "profile.read", 
             Description = "Read information from your profile such as username, email address, etc",
             Dangerous = false,
-            Label = "Read your profile information"
+            Label = "Read your profile information",
+            Icon = "todo"
         });
         scopes.Add(new Scope
         {
             Name = "profile.write",
             Description = "Add/update information on your profile",
             Dangerous = true,
-            Label = "Change your profile information"
+            Label = "Change your profile information",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.list",
+            Description = "List available scopes",
+            Dangerous = true,
+            Label = "List all the available scopes on the platform, including admin scopes. Available to admin accounts only",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.create",
+            Description = "Create new scopes",
+            Dangerous = true,
+            Label = "Create new OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
         });
         
         scopes.ForEach(s => context.Scopes.Add(s));
