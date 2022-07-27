@@ -73,6 +73,7 @@ public class ScopesController : ControllerBase
     }
 
     [Authorise("scopes.create")]
+    [AuthoriseRoles("admin")]
     [HttpPost("batch")]
     public async Task<IActionResult> CreateMultipleAsync(IEnumerable<CreateScopeRequestViewModel> request)
     {
@@ -93,5 +94,41 @@ public class ScopesController : ControllerBase
             message = "Scopes created successfully",
             data = scopes
         }) { StatusCode = StatusCodes.Status201Created };
+    }
+
+    [Authorise("scopes.update")]
+    [AuthoriseRoles("admin")]
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateAsync(Guid id, CreateScopeRequestViewModel request)
+    {
+        Scope scope = await _scopeService.FindByIdAsync(id);
+
+        if (scope == null)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = "Invalid scope ID provided"
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = "Validation failed, please double check your data and try again",
+                data = ModelState
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
+        scope = await _scopeService.UpdateAsync(scope, request);
+
+        return new JsonResult(new
+        {
+            status = 200,
+            message = "Scope updated successfully",
+            data = scope
+        }) { StatusCode = StatusCodes.Status200OK };
     }
 }

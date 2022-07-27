@@ -20,6 +20,11 @@ namespace OAuthServer.Services.Implementation
             _context = context;
         }
 
+        public async Task<Scope> FindByIdAsync(Guid id)
+        {
+            return await _context.Scopes.FindAsync(id);
+        }
+
         public async Task<IList<Scope>> FindAllAsync()
         {
             return await _context.Scopes.ToListAsync();
@@ -96,6 +101,20 @@ namespace OAuthServer.Services.Implementation
 
             await _context.SaveChangesAsync();
             return scopes;
+        }
+
+        public async Task<Scope> UpdateAsync(Scope scope, CreateScopeRequestViewModel request)
+        {
+            scope.Name = request.Name;
+            scope.Description = request.Description;
+            scope.Label = request.Label;
+            scope.Dangerous = request.Dangerous;
+            scope.Icon = request.Icon;
+
+            _context.Scopes.Update(scope);
+            await _context.SaveChangesAsync();
+
+            return scope;
         }
     }
 }
