@@ -147,6 +147,22 @@ internal class Program
             Label = "Create new OAuth scopes available for use on the platform. Available to admin accounts only",
             Icon = "todo"
         });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.update",
+            Description = "Update existing scopes",
+            Dangerous = true,
+            Label = "Update existing OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.delete",
+            Description = "Delete existing scopes",
+            Dangerous = true,
+            Label = "Delete existing OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
+        });
         
         scopes.ForEach(s => context.Scopes.Add(s));
         context.SaveChanges();
