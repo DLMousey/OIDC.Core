@@ -131,4 +131,24 @@ public class ScopesController : ControllerBase
             data = scope
         }) { StatusCode = StatusCodes.Status200OK };
     }
+
+    [Authorise("scopes.delete")]
+    [AuthoriseRoles("admin")]
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteAsync(Guid id)
+    {
+        Scope scope = await _scopeService.FindByIdAsync(id);
+
+        if (scope == null)
+        {
+            return new JsonResult(new
+            {
+                status = 400,
+                message = "Invalid scope ID provided"
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+        }
+
+        _scopeService.Delete(scope);
+        return NoContent();
+    }
 }

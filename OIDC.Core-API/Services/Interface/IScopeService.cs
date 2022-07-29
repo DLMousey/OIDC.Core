@@ -19,5 +19,7 @@ namespace OAuthServer.Services.Interface
         Task<List<Scope>> CreateAsync(IEnumerable<CreateScopeRequestViewModel> request);
 
         Task<Scope> UpdateAsync(Scope scope, CreateScopeRequestViewModel request);
+
+        void Delete(Scope scope);
     }
 }

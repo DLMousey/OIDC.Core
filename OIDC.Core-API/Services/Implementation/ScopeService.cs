@@ -116,5 +116,11 @@ namespace OAuthServer.Services.Implementation
 
             return scope;
         }
+
+        public void Delete(Scope scope)
+        {
+            _context.Remove(scope);
+            _context.SaveChanges();
+        }
     }
 }
