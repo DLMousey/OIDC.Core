@@ -76,7 +76,9 @@ internal class Program
         string password = randomValueService.CryptoSafeRandomString(12);
         User user = CreateUser(userService, randomValueService, username, password);
         Application application = CreateApplication(applicationService, context, appName, user);
-        
+
+        AssignRoles(context, user);
+
         Console.WriteLine("\nProvisioning complete");
         Console.WriteLine("---------------");
         
@@ -118,14 +120,48 @@ internal class Program
             Name = "profile.read", 
             Description = "Read information from your profile such as username, email address, etc",
             Dangerous = false,
-            Label = "Read your profile information"
+            Label = "Read your profile information",
+            Icon = "todo"
         });
         scopes.Add(new Scope
         {
             Name = "profile.write",
             Description = "Add/update information on your profile",
             Dangerous = true,
-            Label = "Change your profile information"
+            Label = "Change your profile information",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.list",
+            Description = "List available scopes",
+            Dangerous = true,
+            Label = "List all the available scopes on the platform, including admin scopes. Available to admin accounts only",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.create",
+            Description = "Create new scopes",
+            Dangerous = true,
+            Label = "Create new OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.update",
+            Description = "Update existing scopes",
+            Dangerous = true,
+            Label = "Update existing OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
+        });
+        scopes.Add(new Scope
+        {
+            Name = "scopes.delete",
+            Description = "Delete existing scopes",
+            Dangerous = true,
+            Label = "Delete existing OAuth scopes available for use on the platform. Available to admin accounts only",
+            Icon = "todo"
         });
         
         scopes.ForEach(s => context.Scopes.Add(s));
@@ -164,6 +200,28 @@ internal class Program
         Console.WriteLine($"Initial user created successfully, GUID: {user.Id}");
 
         return user;
+    }
+
+    private static async Task AssignRoles(AppDbContext context, User user)
+    {
+        Console.WriteLine("Assigning all available roles to initial user...");
+        
+        List<Role> roles = await context.Roles.ToListAsync();
+        roles.ForEach(r =>
+        {
+            user.Roles.Add(new UserRole
+            {
+                Role = r,
+                RoleId = r.Id,
+                User = user,
+                UserId = user.Id
+            });
+        });
+
+        context.Users.Update(user);
+        await context.SaveChangesAsync();
+        
+        Console.WriteLine("Roles assigned");
     }
 }
 

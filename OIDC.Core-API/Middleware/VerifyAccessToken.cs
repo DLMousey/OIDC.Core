@@ -61,6 +61,7 @@ namespace OAuthServer.Middleware
             if (accessToken.Application != null)
             {
                 List<Scope> scopes = new List<Scope>();
+                List<Role> roles = new List<Role>();
                 UserApplication userApplication =
                     await userApplicationService.FindByUserAndApplicationAsync(accessToken.User,
                         accessToken.Application);
@@ -75,7 +76,13 @@ namespace OAuthServer.Middleware
                     scopes.Add(scope.Scope);
                 }
 
+                foreach (UserRole role in userApplication.User.Roles)
+                {
+                    roles.Add(role.Role);
+                }
+
                 context.Items["Scopes"] = scopes;
+                context.Items["Roles"] = roles;
             }
         }
     }
