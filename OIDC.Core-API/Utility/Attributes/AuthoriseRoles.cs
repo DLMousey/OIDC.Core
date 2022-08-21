@@ -33,7 +33,7 @@ public class AuthoriseRoles : Attribute, IAuthorizationFilter
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         User user = (User)context.HttpContext.Items["User"];
-        if (user == null | user.Banned)
+        if (user == null || user.Banned)
         {
             string message = (user == null)
                 ? "Unauthorised"
@@ -92,7 +92,7 @@ public class AuthoriseRoles : Attribute, IAuthorizationFilter
         {
             try
             {
-                providedRoles.Add(normalisedAvailableRoles.First(rn => rn.Equals(roleName)));
+                providedRoles.Add(normalisedAvailableRoles.First(rn => rn.Equals(roleName.Trim().ToLower())));
             }
             catch (Exception)
             {
