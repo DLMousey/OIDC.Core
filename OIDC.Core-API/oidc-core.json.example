@@ -1,0 +1,14 @@
+{
+  "email": {
+    "from": {
+      "name": "Even More Custom From Name",
+      "address": "noreply@example.com"
+    }
+  },
+  "jwt": {
+    "algorithm": "HS256",
+    "type": "JWT",
+    "signingKey": "generate a key with 'openssl rand -hex 256', support for RSA coming soon:tm:",
+    "issuer": "https://oidc.core"
+  }
+}

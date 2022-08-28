@@ -8,4 +8,4 @@ appsettings.json
 appsettings.Development.json
 OIDC.Core-API/Migrations/AppDbContextModelSnapshot.cs
 OIDC.Core.sln.DotSettings.user
-
+oidc-core.json
