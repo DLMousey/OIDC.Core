@@ -1,5 +1,6 @@
 using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace OAuthServer.DAL.Records.AccessToken;
 
@@ -9,12 +10,14 @@ public record Payload(
     [property: JsonProperty("aud")] string Audience
 )
 {
-    [JsonProperty("nbf")] 
-    public DateTime NotBeforeTime { get; } = DateTime.UtcNow;
-
+    [JsonProperty("nbf")]
+    [JsonConverter(typeof(UnixDateTimeConverter))]
+    public DateTime NotBeforeTime { get; set; } = DateTime.Now;
+    
     [JsonProperty("iat")]
-    public DateTime IssuedAtTime { get; } = DateTime.UtcNow;
+    [JsonConverter(typeof(UnixDateTimeConverter))]
+    public DateTime IssuedAtTime { get; set; } = DateTime.Now;
 
     [JsonProperty("jti")]
-    public Guid JWTId { get; } = Guid.NewGuid();
+    public Guid JWTId { get; set; } = Guid.NewGuid();
 }
