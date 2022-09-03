@@ -14,12 +14,12 @@ namespace OIDC.Core_Provision;
 
 internal class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         if (args.Length == 0)
         {
-            string versionString = Assembly.GetEntryAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            string versionString = Assembly.GetEntryAssembly()!
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
                 .InformationalVersion
                 .ToString();
         
@@ -77,7 +77,7 @@ internal class Program
         User user = CreateUser(userService, randomValueService, username, password);
         Application application = CreateApplication(applicationService, context, appName, user);
 
-        AssignRoles(context, user);
+        await AssignRoles(context, user);
 
         Console.WriteLine("\nProvisioning complete");
         Console.WriteLine("---------------");
