@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using OAuthServer.DAL.Entities;
@@ -61,8 +62,8 @@ public class JwtService : IJwtService
         byte[] headerBytes = System.Text.Encoding.UTF8.GetBytes(headerJson);
         byte[] payloadBytes = System.Text.Encoding.UTF8.GetBytes(payloadJson);
 
-        tokenOut += Convert.ToBase64String(headerBytes) + ".";
-        tokenOut += Convert.ToBase64String(payloadBytes) + ".";
+        tokenOut += WebEncoders.Base64UrlEncode(headerBytes) + ".";
+        tokenOut += WebEncoders.Base64UrlEncode(payloadBytes) + ".";
         tokenOut += accessToken.Signature;
 
         return tokenOut;
@@ -77,8 +78,8 @@ public class JwtService : IJwtService
             throw new ArgumentException("Invalid access token structure");
         }
 
-        string headerJson = Encoding.UTF8.GetString(Convert.FromBase64String(parts[0]));
-        string payloadJson = Encoding.UTF8.GetString(Convert.FromBase64String(parts[1]));
+        string headerJson = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(parts[0]));
+        string payloadJson = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(parts[1]));
         
         Header header = JsonConvert.DeserializeObject<Header>(headerJson);
         Payload payload = JsonConvert.DeserializeObject<Payload>(payloadJson);
@@ -92,7 +93,7 @@ public class JwtService : IJwtService
         string json = JsonConvert.SerializeObject(tokenPart);
         byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
 
-        return Convert.ToBase64String(jsonBytes);
+        return WebEncoders.Base64UrlEncode(jsonBytes);
     }
 
     public AccessTokenJwt SignToken(AccessTokenJwt accessToken)
@@ -105,7 +106,7 @@ public class JwtService : IJwtService
         string parts = $"{header}.{payload}";
         
         byte[] hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(parts));
-        string signature = Convert.ToBase64String(hash);
+        string signature = Convert.ToHexString(hash);
 
         return new AccessTokenJwt(accessToken.Header, accessToken.Payload, signature);
     }
