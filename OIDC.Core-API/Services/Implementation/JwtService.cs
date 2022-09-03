@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using OAuthServer.DAL.Entities;
 using OAuthServer.DAL.Records.AccessToken;
 using OAuthServer.Services.Interface;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace OAuthServer.Services.Implementation;
 
@@ -31,9 +30,6 @@ public class JwtService : IJwtService
 
         return SignToken(new AccessTokenJwt(header, payload, null));
     }
-    
-    // Create object from string
-    // Create string from object
 
     public bool ValidateJwt(AccessTokenJwt accessToken)
     {
@@ -59,8 +55,8 @@ public class JwtService : IJwtService
         string headerJson = JsonConvert.SerializeObject(accessToken.Header);
         string payloadJson = JsonConvert.SerializeObject(accessToken.Payload);
 
-        byte[] headerBytes = System.Text.Encoding.UTF8.GetBytes(headerJson);
-        byte[] payloadBytes = System.Text.Encoding.UTF8.GetBytes(payloadJson);
+        byte[] headerBytes = Encoding.UTF8.GetBytes(headerJson);
+        byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadJson);
 
         tokenOut += WebEncoders.Base64UrlEncode(headerBytes) + ".";
         tokenOut += WebEncoders.Base64UrlEncode(payloadBytes) + ".";
@@ -98,14 +94,14 @@ public class JwtService : IJwtService
 
     public AccessTokenJwt SignToken(AccessTokenJwt accessToken)
     {
-        byte[] signingKey = System.Text.Encoding.UTF8.GetBytes(_configuration.GetValue<string>("jwt.signingKey"));
+        byte[] signingKey = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("jwt.signingKey"));
         HMACSHA256 sha256 = new HMACSHA256(signingKey);
 
         string header = EncodeTokenPart(accessToken.Header);
         string payload = EncodeTokenPart(accessToken.Payload);
         string parts = $"{header}.{payload}";
         
-        byte[] hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(parts));
+        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(parts));
         string signature = Convert.ToHexString(hash);
 
         return new AccessTokenJwt(accessToken.Header, accessToken.Payload, signature);
