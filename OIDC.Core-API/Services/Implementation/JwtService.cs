@@ -1,12 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OAuthServer.DAL.Entities;
 using OAuthServer.DAL.Records.AccessToken;
 using OAuthServer.Services.Interface;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace OAuthServer.Services.Implementation;
 
@@ -19,91 +25,65 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
     
-    public AccessTokenJwt CreateJwt(AccessToken accessToken)
+    public string CreateJwt(AccessToken accessToken)
     {
-        string type = _configuration.GetValue<string>("jwt.type");
-        string algorithm = _configuration.GetValue<string>("jwt.algorithm");
-        string issuer = _configuration.GetValue<string>("jwt.issuer");
+        string issuer = _configuration.GetValue<string>("Jwt:Issuer");
+        string signingKey = _configuration.GetValue<string>("Jwt:SigningKey");
         
-        Header header = new Header(type, algorithm);
-        Payload payload = new Payload(issuer, accessToken.UserId, accessToken.Application.HomepageUrl);
+        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(signingKey));
 
-        return SignToken(new AccessTokenJwt(header, payload, null));
-    }
+        DateTime now = DateTime.UtcNow;
+        DateTime expiry = DateTime.UtcNow.AddMinutes(60);
 
-    public bool ValidateJwt(AccessTokenJwt accessToken)
-    {
-        return SignToken(accessToken).Signature == accessToken.Signature;
-    }
+        IEnumerable<string> roleNames = accessToken.User.Roles.Select(r => r.Role.Name);
+        string roleString = String.Join(',', roleNames);
 
-    public bool ValidateJwt(string accessToken)
-    {
-        AccessTokenJwt token = CreateFromString(accessToken);
-
-        if (token == null)
+        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        SecurityTokenDescriptor descriptor = new SecurityTokenDescriptor
         {
-            throw new ArgumentException("Invalid access token structure");
-        }
-        
-        return SignToken(token).Signature == token.Signature;
+            Issuer = issuer,
+            IssuedAt = now,
+            Audience = accessToken.Application.HomepageUrl,
+            Expires = expiry,
+            NotBefore = now,
+            SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256),
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, accessToken.UserId.ToString()),
+                new Claim("roles", roleString),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            })
+        };
+
+        SecurityToken token = handler.CreateToken(descriptor);
+        return handler.WriteToken(token);
     }
 
-    public string CreateFromObject(AccessTokenJwt accessToken)
+    public bool ValidateJwt(AccessToken accessToken)
     {
-        string tokenOut = string.Empty;
+        string issuer = _configuration.GetValue<string>("Jwt:Issuer");
+        string signingKey = _configuration.GetValue<string>("Jwt:SigningKey");
 
-        string headerJson = JsonConvert.SerializeObject(accessToken.Header);
-        string payloadJson = JsonConvert.SerializeObject(accessToken.Payload);
+        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(signingKey));
 
-        byte[] headerBytes = Encoding.UTF8.GetBytes(headerJson);
-        byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadJson);
-
-        tokenOut += WebEncoders.Base64UrlEncode(headerBytes) + ".";
-        tokenOut += WebEncoders.Base64UrlEncode(payloadBytes) + ".";
-        tokenOut += accessToken.Signature;
-
-        return tokenOut;
-    }
-
-    public AccessTokenJwt CreateFromString(string accessToken)
-    {
-        string[] parts = accessToken.Split('.');
-
-        if (parts.Length != 3)
+        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        try
         {
-            throw new ArgumentException("Invalid access token structure");
+            handler.ValidateToken(accessToken.Code, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = issuer,
+                ValidAudience = accessToken.Application.HomepageUrl,
+                IssuerSigningKey = securityKey
+            }, out SecurityToken validatedToken);
+        }
+        catch
+        {
+            return false;
         }
 
-        string headerJson = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(parts[0]));
-        string payloadJson = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(parts[1]));
-        
-        Header header = JsonConvert.DeserializeObject<Header>(headerJson);
-        Payload payload = JsonConvert.DeserializeObject<Payload>(payloadJson);
-        string signature = parts[2];
-
-        return new AccessTokenJwt(header, payload, signature);
-    }
-
-    public string EncodeTokenPart(object tokenPart)
-    {
-        string json = JsonConvert.SerializeObject(tokenPart);
-        byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
-
-        return WebEncoders.Base64UrlEncode(jsonBytes);
-    }
-
-    public AccessTokenJwt SignToken(AccessTokenJwt accessToken)
-    {
-        byte[] signingKey = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("jwt.signingKey"));
-        HMACSHA256 sha256 = new HMACSHA256(signingKey);
-
-        string header = EncodeTokenPart(accessToken.Header);
-        string payload = EncodeTokenPart(accessToken.Payload);
-        string parts = $"{header}.{payload}";
-        
-        byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(parts));
-        string signature = Convert.ToHexString(hash);
-
-        return new AccessTokenJwt(accessToken.Header, accessToken.Payload, signature);
+        return true;
     }
 }

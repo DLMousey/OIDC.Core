@@ -43,6 +43,7 @@ namespace OAuthServer
             services.AddScoped<IScopeService, ScopeService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserApplicationService, UserApplicationService>();
+            services.AddScoped<IJwtService, JwtService>();
             
             // Singletons
             services.AddSingleton<IEmailService, EmailService>();

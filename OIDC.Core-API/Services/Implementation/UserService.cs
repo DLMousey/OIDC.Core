@@ -33,7 +33,10 @@ namespace OAuthServer.Services.Implementation
 
         public async Task<User> FindByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
+            return await _context.Users
+                .Include(u => u.Roles)
+                    .ThenInclude(r => r.Role)
+                .FirstOrDefaultAsync(u => u.Email.Equals(email));
         }
 
         public bool VerifyPassword(string hash, string password)

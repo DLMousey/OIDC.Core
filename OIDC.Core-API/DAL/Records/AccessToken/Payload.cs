@@ -20,4 +20,13 @@ public record Payload(
 
     [JsonProperty("jti")]
     public Guid JWTId { get; set; } = Guid.NewGuid();
+
+    [JsonProperty("exp")]
+    [JsonConverter(typeof(UnixDateTimeConverter))]
+    public DateTime ExpiryTime { get; set; } = DateTime.Now.AddMinutes(60);
+
+    public override string ToString()
+    {
+        return JsonConvert.SerializeObject(this);
+    }
 }

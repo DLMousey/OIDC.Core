@@ -62,13 +62,15 @@ internal class Program
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         IServiceProvider serviceProvider = collection.BuildServiceProvider();
-        
+
         Console.WriteLine("Service & config providers built successfully");
 
         IUserService userService = serviceProvider.GetService<IUserService>()!;
         IApplicationService applicationService = serviceProvider.GetService<IApplicationService>()!;
         IRandomValueService randomValueService = new RandomValueService();
         AppDbContext context = serviceProvider.GetService<AppDbContext>()!;
+
+        context.Database.EnsureCreated();
 
         CreateRoles(context);
         CreateScopes(context);

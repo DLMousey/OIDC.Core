@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL;
 using OAuthServer.DAL.Entities;
+using OAuthServer.DAL.Records.AccessToken;
 using OAuthServer.Services.Interface;
 
 namespace OAuthServer.Services.Implementation
@@ -14,11 +15,13 @@ namespace OAuthServer.Services.Implementation
     {
         private readonly AppDbContext _context;
         private readonly IRandomValueService _randomValueService;
+        private readonly IJwtService _jwtService;
 
-        public AccessTokenService(AppDbContext context, IRandomValueService randomValueService)
+        public AccessTokenService(AppDbContext context, IRandomValueService randomValueService, IJwtService jwtService)
         {
             _context = context;
             _randomValueService = randomValueService;
+            _jwtService = jwtService;
         }
 
         public async Task<AccessToken> FindByCodeAsync(string code)
@@ -52,8 +55,8 @@ namespace OAuthServer.Services.Implementation
             if (accessToken != null)
             {
                 accessToken.LastUsed = DateTime.UtcNow;
-                _context.Update(accessToken);
-                await _context.SaveChangesAsync();
+                // _context.Update(accessToken);
+                // await _context.SaveChangesAsync();
                 
                 return accessToken;
             }
@@ -61,35 +64,18 @@ namespace OAuthServer.Services.Implementation
             accessToken = new AccessToken
             {
                 ApplicationId = application.Id,
-                Code = GenerateCode(),
+                Application = application,
                 UserId = user.Id,
+                User = user,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
             };
             
-            await _context.AddAsync(accessToken);
-            await _context.SaveChangesAsync();
+            accessToken.Code = _jwtService.CreateJwt(accessToken);
+            
+            // await _context.AddAsync(accessToken);
+            // await _context.SaveChangesAsync();
             return accessToken;
-        }
-
-        private string GenerateCode()
-        {
-            int length = 64;
-            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-            StringBuilder res = new StringBuilder();
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                byte[] uintBuffer = new byte[sizeof(uint)];
-
-                while (length-- > 0)
-                {
-                    rng.GetBytes(uintBuffer);
-                    uint num = BitConverter.ToUInt32(uintBuffer, 0);
-                    res.Append(valid[(int)(num % (uint)valid.Length)]);
-                }
-            }
-
-            return res.ToString();
         }
     }
 }
