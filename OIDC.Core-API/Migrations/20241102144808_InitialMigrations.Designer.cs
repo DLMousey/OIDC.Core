@@ -7,19 +7,23 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OAuthServer.DAL;
 
-namespace OAuthServer.Migrations
+#nullable disable
+
+namespace OIDC.CoreAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20201006230305_NullableUserIdFields")]
-    partial class NullableUserIdFields
+    [Migration("20241102144808_InitialMigrations")]
+    partial class InitialMigrations
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityByDefaultColumns()
-                .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.0-rc.1.20451.13");
+                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.AccessToken", b =>
                 {
@@ -34,13 +38,19 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Revoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -70,7 +80,7 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -88,7 +98,7 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -134,13 +144,13 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Revoked")
                         .HasColumnType("boolean");
@@ -177,7 +187,16 @@ namespace OAuthServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("Dangerous")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Label")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -198,15 +217,27 @@ namespace OAuthServer.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("BannedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<string>("Forename")
+                        .HasColumnType("text");
+
                     b.Property<string>("Password")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Surname")
                         .HasColumnType("text");
 
                     b.Property<string>("Username")
@@ -226,19 +257,7 @@ namespace OAuthServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AccessTokenId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AuthorisationCodeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("RefreshTokenId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
@@ -246,32 +265,41 @@ namespace OAuthServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccessTokenId");
-
                     b.HasIndex("ApplicationId");
-
-                    b.HasIndex("AuthorisationCodeId");
-
-                    b.HasIndex("RefreshTokenId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("UserApplications");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplicationScope", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("UserApplicationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RoleId")
+                    b.Property<Guid>("ScopeId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("UserApplicationId", "ScopeId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("ScopeId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserApplicationScopes");
+                });
+
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.Property<Guid>("RolesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsersId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RolesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.AccessToken", b =>
@@ -344,68 +372,60 @@ namespace OAuthServer.Migrations
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplication", b =>
                 {
-                    b.HasOne("OAuthServer.DAL.Entities.AccessToken", "AccessToken")
-                        .WithMany()
-                        .HasForeignKey("AccessTokenId");
-
                     b.HasOne("OAuthServer.DAL.Entities.Application", "Application")
                         .WithMany("UserApplications")
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OAuthServer.DAL.Entities.AuthorisationCode", "AuthorisationCode")
-                        .WithMany()
-                        .HasForeignKey("AuthorisationCodeId");
-
-                    b.HasOne("OAuthServer.DAL.Entities.RefreshToken", "RefreshToken")
-                        .WithMany()
-                        .HasForeignKey("RefreshTokenId");
-
                     b.HasOne("OAuthServer.DAL.Entities.User", "User")
                         .WithMany("UserApplications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AccessToken");
-
                     b.Navigation("Application");
-
-                    b.Navigation("AuthorisationCode");
-
-                    b.Navigation("RefreshToken");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplicationScope", b =>
                 {
-                    b.HasOne("OAuthServer.DAL.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
+                    b.HasOne("OAuthServer.DAL.Entities.Scope", "Scope")
+                        .WithMany()
+                        .HasForeignKey("ScopeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OAuthServer.DAL.Entities.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
+                    b.HasOne("OAuthServer.DAL.Entities.UserApplication", "UserApplication")
+                        .WithMany("Scopes")
+                        .HasForeignKey("UserApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.Navigation("Scope");
 
-                    b.Navigation("User");
+                    b.Navigation("UserApplication");
+                });
+
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.HasOne("OAuthServer.DAL.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OAuthServer.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.Application", b =>
                 {
                     b.Navigation("UserApplications");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.Role", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.User", b =>
@@ -418,9 +438,12 @@ namespace OAuthServer.Migrations
 
                     b.Navigation("RefreshTokens");
 
-                    b.Navigation("Roles");
-
                     b.Navigation("UserApplications");
+                });
+
+            modelBuilder.Entity("OAuthServer.DAL.Entities.UserApplication", b =>
+                {
+                    b.Navigation("Scopes");
                 });
 #pragma warning restore 612, 618
         }

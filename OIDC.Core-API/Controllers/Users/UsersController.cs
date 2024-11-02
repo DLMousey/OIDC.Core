@@ -23,6 +23,7 @@ namespace OAuthServer.Controllers.Users
         
         [Authorise]
         [HttpGet]
+        [AuthoriseScopes("profile.read")]
         public async Task<IActionResult> Get()
         {
             User user = await _userService.FindAsync(GetUser().Id);

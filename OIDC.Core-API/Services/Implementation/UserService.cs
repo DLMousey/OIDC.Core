@@ -54,16 +54,12 @@ namespace OAuthServer.Services.Implementation
                 Email = email,
                 Username = username,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
-                Roles = new List<UserRole>(),
+                Roles = new List<Role>(),
                 CreatedAt = DateTime.UtcNow
             };
             
-            Role userRole = await _roleService.FindByNameAsync("User");
-            user.Roles.Add(new UserRole
-            {
-                User = user,
-                Role = userRole
-            });
+            Role userRole = await _roleService.FindByNameAsync("user");
+            user.Roles.Add(userRole);
             
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();

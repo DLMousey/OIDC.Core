@@ -7,19 +7,23 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OAuthServer.DAL;
 
-namespace OAuthServer.Migrations
+#nullable disable
+
+namespace OIDC.CoreAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20201014214807_AddApplicationScopes")]
-    partial class AddApplicationScopes
+    [Migration("20241102152040_SeedRoles")]
+    partial class SeedRoles
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityByDefaultColumns()
-                .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.0-rc.1.20451.13");
+                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.AccessToken", b =>
                 {
@@ -34,19 +38,19 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Revoked")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -76,7 +80,7 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -94,7 +98,7 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -140,13 +144,13 @@ namespace OAuthServer.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastUsed")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Revoked")
                         .HasColumnType("boolean");
@@ -175,6 +179,18 @@ namespace OAuthServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0a1f9070-f943-4337-8de2-4e4c21219215"),
+                            Name = "user"
+                        },
+                        new
+                        {
+                            Id = new Guid("e43b033c-ed04-4620-9abe-2d9139ab14c1"),
+                            Name = "admin"
+                        });
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.Scope", b =>
@@ -183,7 +199,16 @@ namespace OAuthServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("Dangerous")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Label")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -204,16 +229,16 @@ namespace OAuthServer.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("BannedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Bio")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
@@ -271,22 +296,22 @@ namespace OAuthServer.Migrations
 
                     b.HasIndex("ScopeId");
 
-                    b.ToTable("ApplicationScopes");
+                    b.ToTable("UserApplicationScopes");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("RolesId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RoleId")
+                    b.Property<Guid>("UsersId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("RolesId", "UsersId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("UsersId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.AccessToken", b =>
@@ -395,33 +420,24 @@ namespace OAuthServer.Migrations
                     b.Navigation("UserApplication");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.HasOne("OAuthServer.DAL.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
+                    b.HasOne("OAuthServer.DAL.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OAuthServer.DAL.Entities.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
+                    b.HasOne("OAuthServer.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.Application", b =>
                 {
                     b.Navigation("UserApplications");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.Role", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.User", b =>
@@ -433,8 +449,6 @@ namespace OAuthServer.Migrations
                     b.Navigation("AuthorisationCodes");
 
                     b.Navigation("RefreshTokens");
-
-                    b.Navigation("Roles");
 
                     b.Navigation("UserApplications");
                 });

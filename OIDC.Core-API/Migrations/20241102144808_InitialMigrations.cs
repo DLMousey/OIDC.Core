@@ -1,10 +1,14 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace OAuthServer.Migrations
+#nullable disable
+
+namespace OIDC.CoreAPI.Migrations
 {
-    public partial class InitialEntities : Migration
+    /// <inheritdoc />
+    public partial class InitialMigrations : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -25,7 +29,10 @@ namespace OAuthServer.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true)
+                    Label = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Dangerous = table.Column<bool>(type: "boolean", nullable: false),
+                    Icon = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -40,9 +47,13 @@ namespace OAuthServer.Migrations
                     Username = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
+                    Bio = table.Column<string>(type: "text", nullable: true),
+                    Forename = table.Column<string>(type: "text", nullable: true),
+                    Surname = table.Column<string>(type: "text", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Banned = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    BannedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BannedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -61,8 +72,9 @@ namespace OAuthServer.Migrations
                     RedirectUrl = table.Column<string>(type: "text", nullable: true),
                     ClientId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClientSecret = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    FirstParty = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -76,24 +88,24 @@ namespace OAuthServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserRoles",
+                name: "RoleUser",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
+                    RolesId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UsersId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
+                    table.PrimaryKey("PK_RoleUser", x => new { x.RolesId, x.UsersId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_Roles_RoleId",
-                        column: x => x.RoleId,
+                        name: "FK_RoleUser_Roles_RolesId",
+                        column: x => x.RolesId,
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserRoles_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_RoleUser_Users_UsersId",
+                        column: x => x.UsersId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -107,9 +119,11 @@ namespace OAuthServer.Migrations
                     Code = table.Column<string>(type: "text", nullable: true),
                     ApplicationId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    LastUsed = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    Revoked = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUsed = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -163,9 +177,9 @@ namespace OAuthServer.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ApplicationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Revoked = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    LastUsed = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUsed = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -190,21 +204,11 @@ namespace OAuthServer.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ApplicationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AuthorisationCodeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AccessTokenId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RefreshTokenId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    ApplicationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserApplications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserApplications_AccessTokens_AccessTokenId",
-                        column: x => x.AccessTokenId,
-                        principalTable: "AccessTokens",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserApplications_Applications_ApplicationId",
                         column: x => x.ApplicationId,
@@ -212,21 +216,33 @@ namespace OAuthServer.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserApplications_AuthorisationCodes_AuthorisationCodeId",
-                        column: x => x.AuthorisationCodeId,
-                        principalTable: "AuthorisationCodes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserApplications_RefreshTokens_RefreshTokenId",
-                        column: x => x.RefreshTokenId,
-                        principalTable: "RefreshTokens",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_UserApplications_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserApplicationScopes",
+                columns: table => new
+                {
+                    UserApplicationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ScopeId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserApplicationScopes", x => new { x.UserApplicationId, x.ScopeId });
+                    table.ForeignKey(
+                        name: "FK_UserApplicationScopes_Scopes_ScopeId",
+                        column: x => x.ScopeId,
+                        principalTable: "Scopes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserApplicationScopes_UserApplications_UserApplicationId",
+                        column: x => x.UserApplicationId,
+                        principalTable: "UserApplications",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -267,9 +283,9 @@ namespace OAuthServer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserApplications_AccessTokenId",
-                table: "UserApplications",
-                column: "AccessTokenId");
+                name: "IX_RoleUser_UsersId",
+                table: "RoleUser",
+                column: "UsersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserApplications_ApplicationId",
@@ -277,24 +293,14 @@ namespace OAuthServer.Migrations
                 column: "ApplicationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserApplications_AuthorisationCodeId",
-                table: "UserApplications",
-                column: "AuthorisationCodeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserApplications_RefreshTokenId",
-                table: "UserApplications",
-                column: "RefreshTokenId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserApplications_UserId",
                 table: "UserApplications",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_RoleId",
-                table: "UserRoles",
-                column: "RoleId");
+                name: "IX_UserApplicationScopes_ScopeId",
+                table: "UserApplicationScopes",
+                column: "ScopeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -303,17 +309,9 @@ namespace OAuthServer.Migrations
                 unique: true);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Scopes");
-
-            migrationBuilder.DropTable(
-                name: "UserApplications");
-
-            migrationBuilder.DropTable(
-                name: "UserRoles");
-
             migrationBuilder.DropTable(
                 name: "AccessTokens");
 
@@ -324,7 +322,19 @@ namespace OAuthServer.Migrations
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
+                name: "RoleUser");
+
+            migrationBuilder.DropTable(
+                name: "UserApplicationScopes");
+
+            migrationBuilder.DropTable(
                 name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "Scopes");
+
+            migrationBuilder.DropTable(
+                name: "UserApplications");
 
             migrationBuilder.DropTable(
                 name: "Applications");

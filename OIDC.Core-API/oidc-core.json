@@ -4,5 +4,16 @@
       "name": "Even More Custom From Name",
       "address": "noreply@example.com"
     }
+  },
+  "Middleware": {
+    "VerifyAccessToken": {
+      "ExcludedPaths": [
+        "/registration",
+        "/oauth/password"
+      ]
+    }
+  },
+  "API": {
+    "ClientId": "203b9cf1-b46c-43f0-8bbb-e8bd4644737d"
   }
 }

@@ -71,6 +71,32 @@ namespace OAuthServer.Services.Implementation
             await _context.SaveChangesAsync();
             return accessToken;
         }
+        
+        public async Task<AccessToken> CreateAsync(User user, UserApplication application)
+        {
+            AccessToken accessToken = await FindByUserApplication(application);
+            if (accessToken != null)
+            {
+                accessToken.LastUsed = DateTime.UtcNow;
+                _context.Update(accessToken);
+                await _context.SaveChangesAsync();
+                
+                return accessToken;
+            }
+            
+            accessToken = new AccessToken
+            {
+                ApplicationId = application.Id,
+                Code = GenerateCode(),
+                UserId = user.Id,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+            };
+            
+            await _context.AddAsync(accessToken);
+            await _context.SaveChangesAsync();
+            return accessToken;
+        }
 
         private string GenerateCode()
         {

@@ -9,6 +9,6 @@ namespace OAuthServer.DAL.Entities
 
         public string Name { get; set; }
 
-        public ICollection<UserRole> UserRoles { get; set; }
+        public ICollection<User> Users { get; set; }
     }
 }

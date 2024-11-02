@@ -8,7 +8,7 @@ namespace OAuthServer.Services.Interface
     public interface IUserApplicationService
     {
         Task<IList<UserApplication>> FindByUserAsync(User user);
-        Task<UserApplication> FindOrCreateByUserAndClientIdAsync(User user, Guid clientId);
+        Task<UserApplication> FindOrCreateByUserAndClientIdAsync(User user, Guid clientId, IList<Scope> scopes);
         Task<UserApplication> FindByUserAndApplicationAsync(User user, Application application);
         Task<UserApplication> AuthoriseApplicationAsync(Guid userId, Guid applicationId);
         Task<UserApplication> AuthoriseApplicationAsync(User user, Application application);

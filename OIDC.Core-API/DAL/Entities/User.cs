@@ -34,7 +34,7 @@ namespace OAuthServer.DAL.Entities
 
         public IList<Application> Applications { get; set; }
 
-        public IList<UserRole> Roles { get; set; }
+        public IList<Role> Roles { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

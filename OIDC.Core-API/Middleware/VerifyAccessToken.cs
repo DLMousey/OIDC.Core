@@ -14,15 +14,27 @@ namespace OAuthServer.Middleware
         private readonly RequestDelegate _next;
         private readonly IConfiguration _config;
 
+        private readonly IList<string> _excludedPaths;
+
         public VerifyAccessToken(RequestDelegate next, IConfiguration config)
         {
             _next = next;
             _config = config;
+
+            _excludedPaths = config.GetSection("Middleware:VerifyAccessToken:ExcludedPaths").Get<List<string>>();
         }
 
         public async Task Invoke(HttpContext context, IAccessTokenService accessTokenService, 
             IUserApplicationService userApplicationService)
         {
+            string path = context.Request.Path.Value;
+            if (_excludedPaths.Contains(path))
+            {
+                await _next(context);
+                return;
+            }
+            
+            
             string accessCode;
             bool hasCookie = context.Request.Cookies.TryGetValue("_oidc.core-token", out accessCode);
 
@@ -76,9 +88,9 @@ namespace OAuthServer.Middleware
                     scopes.Add(scope.Scope);
                 }
 
-                foreach (UserRole role in userApplication.User.Roles)
+                foreach (Role role in userApplication.User.Roles)
                 {
-                    roles.Add(role.Role);
+                    roles.Add(role);
                 }
 
                 context.Items["Scopes"] = scopes;

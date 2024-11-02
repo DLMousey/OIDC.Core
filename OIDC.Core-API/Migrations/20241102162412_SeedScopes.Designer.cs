@@ -9,17 +9,18 @@ using OAuthServer.DAL;
 
 #nullable disable
 
-namespace OAuthServer.Migrations
+namespace OIDC.CoreAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220502001030_AdditionalScopeFields")]
-    partial class AdditionalScopeFields
+    [Migration("20241102162412_SeedScopes")]
+    partial class SeedScopes
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.4")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -178,6 +179,18 @@ namespace OAuthServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("41337165-9c3a-4c6a-8d89-9a4b26659168"),
+                            Name = "user"
+                        },
+                        new
+                        {
+                            Id = new Guid("036beea1-5ab6-4f0b-85fa-e3e9f14ab057"),
+                            Name = "admin"
+                        });
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.Scope", b =>
@@ -192,6 +205,9 @@ namespace OAuthServer.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("Icon")
+                        .HasColumnType("text");
+
                     b.Property<string>("Label")
                         .HasColumnType("text");
 
@@ -201,6 +217,35 @@ namespace OAuthServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Scopes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("f19575cb-2364-4d29-816b-af9847685efb"),
+                            Dangerous = false,
+                            Description = "Allows read-only access to your profile information",
+                            Icon = "account",
+                            Label = "Read Profile",
+                            Name = "profile.read"
+                        },
+                        new
+                        {
+                            Id = new Guid("59d4dcbc-8eac-4a9b-ad6a-3bf07164f888"),
+                            Dangerous = false,
+                            Description = "Allows modification of details on your profile, not including your password or email address",
+                            Icon = "true",
+                            Label = "Update Profile",
+                            Name = "profile.write"
+                        },
+                        new
+                        {
+                            Id = new Guid("f0a49419-cd3f-4dfa-be49-18c44bff7d5f"),
+                            Dangerous = false,
+                            Description = "Allows listing applications you have published",
+                            Icon = "true",
+                            Label = "List applications you have published",
+                            Name = "applications.read"
+                        });
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.User", b =>
@@ -283,19 +328,19 @@ namespace OAuthServer.Migrations
                     b.ToTable("UserApplicationScopes");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("RolesId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RoleId")
+                    b.Property<Guid>("UsersId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("UserId", "RoleId");
+                    b.HasKey("RolesId", "UsersId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("UsersId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.AccessToken", b =>
@@ -404,33 +449,24 @@ namespace OAuthServer.Migrations
                     b.Navigation("UserApplication");
                 });
 
-            modelBuilder.Entity("OAuthServer.DAL.Entities.UserRole", b =>
+            modelBuilder.Entity("RoleUser", b =>
                 {
-                    b.HasOne("OAuthServer.DAL.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
+                    b.HasOne("OAuthServer.DAL.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OAuthServer.DAL.Entities.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
+                    b.HasOne("OAuthServer.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.Application", b =>
                 {
                     b.Navigation("UserApplications");
-                });
-
-            modelBuilder.Entity("OAuthServer.DAL.Entities.Role", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("OAuthServer.DAL.Entities.User", b =>
@@ -442,8 +478,6 @@ namespace OAuthServer.Migrations
                     b.Navigation("AuthorisationCodes");
 
                     b.Navigation("RefreshTokens");
-
-                    b.Navigation("Roles");
 
                     b.Navigation("UserApplications");
                 });

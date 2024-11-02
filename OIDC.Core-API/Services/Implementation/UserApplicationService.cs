@@ -30,18 +30,24 @@ namespace OAuthServer.Services.Implementation
                 .ToListAsync();
         }
 
-        public async Task<UserApplication> FindOrCreateByUserAndClientIdAsync(User user, Guid clientId)
+        public async Task<UserApplication> FindOrCreateByUserAndClientIdAsync(User user, Guid clientId, IList<Scope> scopes)
         {
             UserApplication userApplication = await _context.UserApplications
                 .Include(ua => ua.User)
                 .Include(ua => ua.Application)
+                .Include(ua => ua.Scopes)
+                    .ThenInclude(uas => uas.Scope)
                 .FirstOrDefaultAsync(ua =>
                     ua.User.Equals(user) && ua.Application.ClientId.Equals(clientId)
                 );
-
+            
             if (userApplication != null)
             {
-                return userApplication;
+                List<Scope> existingScopes = userApplication.Scopes.Select(s => s.Scope).ToList();
+                if (existingScopes.SequenceEqual(scopes))
+                {
+                    return userApplication;
+                }
             }
 
             Application application = await _applicationService.FindByClientIdAsync(clientId);
@@ -55,8 +61,20 @@ namespace OAuthServer.Services.Implementation
                 Application = application,
                 ApplicationId = application.Id,
                 User = user,
-                UserId = user.Id
+                UserId = user.Id,
+                Scopes = new List<UserApplicationScope>()
             };
+            
+            foreach (Scope scope in scopes)
+            {
+                userApplication.Scopes.Add(new UserApplicationScope
+                {
+                    UserApplication = userApplication,
+                    UserApplicationId = userApplication.Id,
+                    Scope = scope,
+                    ScopeId = scope.Id
+                });
+            }
 
             await _context.AddAsync(userApplication);
             await _context.SaveChangesAsync();
@@ -72,7 +90,6 @@ namespace OAuthServer.Services.Implementation
                     .ThenInclude(s => s.Scope)
                 .Include(ua => ua.User)
                     .ThenInclude(u => u.Roles)
-                        .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(ua =>
                 ua.UserId.Equals(user.Id) && ua.ApplicationId.Equals(application.Id));
         }

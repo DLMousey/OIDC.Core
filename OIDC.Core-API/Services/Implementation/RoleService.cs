@@ -23,7 +23,7 @@ namespace OAuthServer.Services.Implementation
 
         public async Task<Role> FindByNameAsync(string name)
         {
-            return await _context.Roles.FirstOrDefaultAsync(r => r.Name.Equals(name));
+            return await _context.Roles.FirstOrDefaultAsync(r => r.Name.Equals(name.ToLower()));
         }
     }
 }

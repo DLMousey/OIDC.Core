@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using OAuthServer.DAL.Entities;
 
@@ -14,7 +16,7 @@ namespace OAuthServer.DAL
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserApplication> UserApplications { get; set; }
         public virtual DbSet<UserApplicationScope> UserApplicationScopes { get; set; }
-        public virtual DbSet<UserRole> UserRoles { get; set; }
+        // public virtual DbSet<UserRole> UserRoles { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
@@ -61,19 +63,6 @@ namespace OAuthServer.DAL
 
                 builder.HasOne(rt => rt.Application);
             });
-            
-            modelBuilder.Entity<UserRole>(builder =>
-            {
-                builder.HasKey(ur => new {ur.UserId, ur.RoleId});
-                
-                builder.HasOne(ur => ur.User)
-                    .WithMany(ur => ur.Roles)
-                    .HasForeignKey(ur => ur.UserId);
-                
-                builder.HasOne(ur => ur.Role)
-                    .WithMany(ur => ur.UserRoles)
-                    .HasForeignKey(ur => ur.RoleId);
-            });
 
             modelBuilder.Entity<UserApplication>(builder =>
             {
@@ -102,6 +91,54 @@ namespace OAuthServer.DAL
             modelBuilder.Entity<User>(builder =>
             {
                 builder.HasIndex(u => u.Email).IsUnique();
+                builder.HasMany(u => u.Roles)
+                        .WithMany(r => r.Users);
+            });
+
+            modelBuilder.Entity<Role>(builder =>
+            {
+                builder.HasData(new Role
+                {
+                    Name = "user",
+                    Users = new List<User>()
+                });
+
+                builder.HasData(new Role
+                {
+                    Name = "admin",
+                    Users = new List<User>()
+                });
+            });
+
+            modelBuilder.Entity<Scope>(builder =>
+            {
+                builder.HasData(new Scope
+                {
+                    Name = "profile.read",
+                    Label = "Read Profile",
+                    Description = "Allows read-only access to your profile information",
+                    Dangerous = false,
+                    Icon = "account"
+                });
+
+                builder.HasData(new Scope
+                {
+                    Name = "profile.write",
+                    Label = "Update Profile",
+                    Description =
+                        "Allows modification of details on your profile, not including your password or email address",
+                    Dangerous = false,
+                    Icon = "true"
+                });
+
+                builder.HasData(new Scope
+                {
+                    Name = "applications.read",
+                    Label = "List applications you have published",
+                    Description = "Allows listing applications you have published",
+                    Dangerous = false,
+                    Icon = "true"
+                });
             });
         }
     }
